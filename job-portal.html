@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Portal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+  body { background: #f0f2f5; }
+  header { background: #1a73e8; color: white; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-size: 24px; }
+  .search-bar { display: flex; gap: 8px; padding: 24px 32px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .search-bar input, .search-bar select { padding: 10px 14px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; flex: 1; }
+  .search-bar button { padding: 10px 20px; background: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .search-bar button:hover { background: #1558b0; }
+  .jobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 28px 32px; }
+  .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .card h3 { color: #1a73e8; font-size: 17px; margin-bottom: 6px; }
+  .card .company { font-weight: bold; color: #333; margin-bottom: 4px; }
+  .card .meta { font-size: 13px; color: #777; margin-bottom: 12px; }
+  .card .tags span { background: #e8f0fe; color: #1a73e8; padding: 3px 10px; border-radius: 20px; font-size: 12px; margin-right: 6px; }
+  .card button { margin-top: 14px; width: 100%; padding: 9px; background: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .card button:hover { background: #1558b0; }
+  #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+  #modal.show { display: flex; }
+  .modal-box { background: white; padding: 28px; border-radius: 10px; width: 380px; }
+  .modal-box h2 { margin-bottom: 16px; color: #1a73e8; }
+  .modal-box input { width: 100%; padding: 9px 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+  .modal-box button { width: 100%; padding: 10px; background: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .modal-box .close { background: #ccc; color: #333; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔍 JobPortal</h1>
+  <span>Find Your Dream Job</span>
+</header>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search job title or keyword..." oninput="filterJobs()">
+  <select id="locationFilter" onchange="filterJobs()">
+    <option value="">All Locations</option>
+    <option>Remote</option>
+    <option>New York</option>
+    <option>San Francisco</option>
+    <option>London</option>
+  </select>
+  <button onclick="filterJobs()">Search</button>
+</div>
+
+<div class="jobs" id="jobList"></div>
+
+<div id="modal">
+  <div class="modal-box">
+    <h2>Apply for <span id="modalJob"></span></h2>
+    <input type="text" placeholder="Your Full Name" id="appName">
+    <input type="email" placeholder="Your Email" id="appEmail">
+    <input type="text" placeholder="Phone Number" id="appPhone">
+    <button onclick="submitApp()">Submit Application</button>
+    <button class="close" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+  const jobs = [
+    { title: "Frontend Developer", company: "Google", location: "Remote", type: "Full-time", tags: ["React", "CSS"] },
+    { title: "Backend Engineer", company: "Amazon", location: "New York", type: "Full-time", tags: ["Node.js", "AWS"] },
+    { title: "UI/UX Designer", company: "Meta", location: "San Francisco", type: "Contract", tags: ["Figma", "Design"] },
+    { title: "Data Analyst", company: "Netflix", location: "Remote", type: "Part-time", tags: ["Python", "SQL"] },
+    { title: "DevOps Engineer", company: "Microsoft", location: "London", type: "Full-time", tags: ["Docker", "CI/CD"] },
+    { title: "Mobile Developer", company: "Apple", location: "San Francisco", type: "Full-time", tags: ["Swift", "iOS"] },
+  ];
+
+  function renderJobs(list) {
+    const container = document.getElementById("jobList");
+    container.innerHTML = list.map(j => `
+      <div class="card">
+        <h3>${j.title}</h3>
+        <div class="company">${j.company}</div>
+        <div class="meta">📍 ${j.location} &nbsp; ⏱ ${j.type}</div>
+        <div class="tags">${j.tags.map(t => `<span>${t}</span>`).join("")}</div>
+        <button onclick="openModal('${j.title} at ${j.company}')">Apply Now</button>
+      </div>`).join("");
+  }
+
+  function filterJobs() {
+    const q = document.getElementById("searchInput").value.toLowerCase();
+    const loc = document.getElementById("locationFilter").value;
+    renderJobs(jobs.filter(j =>
+      (j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q)) &&
+      (loc === "" || j.location === loc)
+    ));
+  }
+
+  function openModal(job) { document.getElementById("modalJob").textContent = job; document.getElementById("modal").classList.add("show"); }
+  function closeModal() { document.getElementById("modal").classList.remove("show"); }
+  function submitApp() {
+    const name = document.getElementById("appName").value;
+    const email = document.getElementById("appEmail").value;
+    if (!name || !email) { alert("Please fill in Name and Email."); return; }
+    alert(`✅ Application submitted!\nName: ${name}\nEmail: ${email}`);
+    closeModal();
+  }
+
+  renderJobs(jobs);
+</script>
+</body>
+</html>
